@@ -1,6 +1,13 @@
 {
     "require": {
         "slim/slim": "4.*",
-        "slim/psr7": "^1.6"
+        "slim/psr7": "^1.6",
+        "salesforce/handlebars-php": "^3.0",
+        "league/container": "^4.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "app\\": "app/"
+        }
     }
 }
