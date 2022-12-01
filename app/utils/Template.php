@@ -1,5 +1,6 @@
 <?php
 namespace app\utils;
+use Handlebars\Handlebars;
 
 class Template {
     public $path;
@@ -33,5 +34,10 @@ class Template {
 
     function isText(){
         return explode('/', $this->getMimeType())[0] == 'text';
+    }
+
+    function render($data) {
+        $handlebars = new Handlebars();
+        return $handlebars->render($this->getContent(), $data);
     }
 }
