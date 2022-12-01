@@ -8,43 +8,9 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
 use Slim\Routing\RouteCollectorProxy;
 use app\utils\container;
+use app\utils\template;
 
 require __DIR__ . '/vendor/autoload.php';
-
-class Template {
-    public $path;
-    public $content;
-
-    function __construct($path) {
-        $this->path = $path;
-        $this->content = file_get_contents($path);
-    }
-
-    function getContent(){
-        return $this->content;
-    }
-
-    function getExtension($path) {
-        // will get text mimetypes wrong
-        $fileNameParts = explode('.', $path);
-        return end($fileNameParts);
-        
-    }
-    
-    function getMimeType() {
-        $extension = $this->getExtension($this->path);
-        // will get text mimetypes wrong
-        if ($extension == 'js' || $extension == 'css'){
-            return "text/{$extension}";
-        }
-        // fallback for everything else
-        return mime_content_type($this->path);
-    }
-
-    function isText(){
-        return explode('/', $this->getMimeType())[0] == 'text';
-    }
-}
 
 // Create Container using PHP-DI
 $container = new Container();
@@ -64,7 +30,7 @@ $container->add('handlebars', function () use ($handlebars) {
 
 $source = [
     'domain'=> 'test',
-    'template'=> 'test3',
+    'template'=> 'test',
     'color'=> '#3b065e',
     'test'=> 'Your business needs the power of technology. We build solutions that help you streamline your business and engage more customers. Get on the front line of the digital experience.'
 ];
