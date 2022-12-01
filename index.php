@@ -70,21 +70,45 @@ $container->add('source', function () use ($source) {
     return $source;
 });
 
-$app->group('/preview', function (RouteCollectorProxy $group) {
-    $group->group('/{domain}/', function (RouteCollectorProxy $group) {
-        $group->get('', function (Request $request, Response $response, array $args) {
-            
-            $template = $this->get('template', 'templates/test/index.html');            
-            $source= $this->get('source');
-            $handlebars = $this->get('handlebars');
-            $content = $handlebars->render($template->getContent(), $source);
+$app->get('/preview/{domain}/[{path: .*}]', function (Request $request, Response $response, array $args) {
+    // if no path use index
+    if(!isset($args['path'])) {
+        $args['path'] = 'index.html';
+    }
 
-            $response->getBody()->write($content);
-            return $response->withHeader('Content-Type', 'text/html');
-        });
-        $group->get('{path: .*}', function (Request $request, Response $response, array $args) {
-            $template = $this->get('template', "templates/test/{$args['path']}");
-            #if text run it through templating
+    $template = $this->get('template', "templates/test/{$args['path']}");
+    #if text run it through templating
+    if($template->isText()) {
+        $handlebars = $this->get('handlebars');
+        $source= $this->get('source');
+        $content = $handlebars->render($template->getContent(), $source);
+    }
+    else {
+        $content = $template->getContent();
+    }
+
+    $response->getBody()->write($content);
+    return $response->withHeader('Content-Type', $template->getMimeType());
+});
+
+
+$app->get('/deploy/{domain}[/]', function (Request $request, Response $response, array $args) {
+
+    // iterate through template files recursively, render, and write to exports folder
+    $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator('templates/test/'));
+
+    foreach ($iterator as $file){
+        if (!$file->isDir()){
+            //make the containing directories if they dont exist
+            if(!is_dir("exports/{$args['domain']}/{$iterator->getSubPath()}")){
+                mkdir("exports/{$args['domain']}/{$iterator->getSubPath()}", 0777, true);// make recursive directory
+            }
+
+            //file subpath
+            $filePath = $iterator->getSubPathName();
+
+            //render template
+            $template = $this->get('template', "templates/test/{$filePath}");
             if($template->isText()) {
                 $handlebars = $this->get('handlebars');
                 $source= $this->get('source');
@@ -94,13 +118,12 @@ $app->group('/preview', function (RouteCollectorProxy $group) {
                 $content = $template->getContent();
             }
 
-            $response->getBody()->write($content);
-            return $response->withHeader('Content-Type', $template->getMimeType());
-        });
-    });
-});
+            // write to file
+            file_put_contents("exports/{$args['domain']}/{$filePath}", $content);
+        }
+    }
 
-$app->group('/deploy/{domain}', function (RouteCollectorProxy $group) {
-
+    $response->getBody()->write('complete');
+    return $response;
 });
 $app->run();
