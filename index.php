@@ -63,6 +63,8 @@ $container->add('handlebars', function () use ($handlebars) {
 });
 
 $source = [
+    'domain'=> 'test',
+    'template'=> 'test3',
     'color'=> '#3b065e',
     'test'=> 'Your business needs the power of technology. We build solutions that help you streamline your business and engage more customers. Get on the front line of the digital experience.'
 ];
@@ -76,11 +78,12 @@ $app->get('/preview/{domain}/[{path: .*}]', function (Request $request, Response
         $args['path'] = 'index.html';
     }
 
-    $template = $this->get('template', "templates/test/{$args['path']}");
+    $source= $this->get('source');
+
+    $template = $this->get('template', "templates/{$source['template']}/{$args['path']}");
     #if text run it through templating
     if($template->isText()) {
-        $handlebars = $this->get('handlebars');
-        $source= $this->get('source');
+        $handlebars = $this->get('handlebars');        
         $content = $handlebars->render($template->getContent(), $source);
     }
     else {
@@ -94,8 +97,9 @@ $app->get('/preview/{domain}/[{path: .*}]', function (Request $request, Response
 
 $app->get('/deploy/{domain}[/]', function (Request $request, Response $response, array $args) {
 
+    $source= $this->get('source');
     // iterate through template files recursively, render, and write to exports folder
-    $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator('templates/test/'));
+    $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator("templates/{$source['template']}/"));
 
     foreach ($iterator as $file){
         if (!$file->isDir()){
@@ -108,10 +112,9 @@ $app->get('/deploy/{domain}[/]', function (Request $request, Response $response,
             $filePath = $iterator->getSubPathName();
 
             //render template
-            $template = $this->get('template', "templates/test/{$filePath}");
+            $template = $this->get('template', "templates/{$source['template']}/{$filePath}");
             if($template->isText()) {
-                $handlebars = $this->get('handlebars');
-                $source= $this->get('source');
+                $handlebars = $this->get('handlebars');                
                 $content = $handlebars->render($template->getContent(), $source);
             }
             else {
