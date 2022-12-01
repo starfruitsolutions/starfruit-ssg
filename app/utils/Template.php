@@ -37,7 +37,12 @@ class Template {
     }
 
     function render($data) {
-        $handlebars = new Handlebars();
-        return $handlebars->render($this->getContent(), $data);
+        if($this->isText()) {     
+            $handlebars = new Handlebars();
+            return $handlebars->render($this->getContent(), $data);
+        }
+        else {
+            return $this->getContent();
+        }
     }
 }

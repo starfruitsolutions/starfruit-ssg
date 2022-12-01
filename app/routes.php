@@ -12,13 +12,8 @@ $app->get('/preview/{domain}/[{path: .*}]', function (Request $request, Response
     $data= $this->get('dataSource')->getData();
 
     $template = $this->get('template', "templates/{$data['template']}/{$args['path']}");
-    #if text run it through templating
-    if($template->isText()) {     
-        $content = $template->render($data);
-    }
-    else {
-        $content = $template->getContent();
-    }
+      
+    $content = $template->render($data);    
 
     $response->getBody()->write($content);
     return $response->withHeader('Content-Type', $template->getMimeType());
@@ -43,12 +38,7 @@ $app->get('/deploy/{domain}[/]', function (Request $request, Response $response,
 
             //render template
             $template = $this->get('template', "templates/{$data['template']}/{$filePath}");
-            if($template->isText()) {
-                $content = $template->render($data);
-            }
-            else {
-                $content = $template->getContent();
-            }
+            $content = $template->render($data);
 
             // write to file
             file_put_contents("exports/{$args['domain']}/{$filePath}", $content);
