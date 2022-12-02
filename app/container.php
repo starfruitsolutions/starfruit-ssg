@@ -8,8 +8,8 @@ use app\utils\datasource;
 // create container
 $container = new Container();
 
-$container->add('template', function ($path) {
-    return new Template($path);
+$container->add('template', function ($data) {
+    return new Template($data);
 });
 
 $handlebars = new Handlebars();
