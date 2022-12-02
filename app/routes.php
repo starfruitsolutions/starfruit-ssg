@@ -28,3 +28,11 @@ $app->get('/deploy/{domain}[/]', function (Request $request, Response $response,
     $response->getBody()->write('complete');
     return $response;
 });
+
+$app->get('/schema/{domain}[/]', function (Request $request, Response $response, array $args) {
+
+    $schema = $this->get('template', ['template'=>'test'])->getSchema();
+
+    $response->getBody()->write(json_encode($schema));
+    return $response;
+});
